@@ -13,7 +13,10 @@ object MaiaBuild extends Build {
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
-      libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.1.2"
+      libraryDependencies ++= Seq(
+        "com.typesafe.akka" %% "akka-actor" % "2.1.2",
+        "pircbot" % "pircbot" % "1.5.0"
+      )
     )
   )
 }
