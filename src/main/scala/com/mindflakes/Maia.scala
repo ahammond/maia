@@ -4,10 +4,13 @@ import akka.actor._
 import akka.pattern.ask
 import scala.concurrent.duration._
 import akka.util.Timeout
+import org.jibble.pircbot.PircBot
 
 case class Start()
 
-class MaiaIRCActor extends Actor with ActorLogging {
+
+class MaiaIRCActor extends PircBot with Actor with ActorLogging {
+  setName("MaiaIRCActor")
   def receive = {
     case Start => {
       log.info("Starting")
