@@ -24,7 +24,7 @@ object Maia extends App {
   val irc_bot = system.actorOf(Props[MaiaIRCActor], "IRCBot")
 
   irc_bot ! Start
-  println("Press the 'Any' key to exit.")
+  println("Press 'Return' key to exit.")
   readLine()
   system.shutdown()
 
