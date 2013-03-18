@@ -7,7 +7,7 @@ import akka.util.Timeout
 
 case class Start()
 
-class MaiaIRCBot extends Actor with ActorLogging {
+class MaiaIRCActor extends Actor with ActorLogging {
   def receive = {
     case Start => {
       log.info("Starting")
@@ -18,7 +18,7 @@ class MaiaIRCBot extends Actor with ActorLogging {
 
 object Maia extends App {
   val system = ActorSystem("Maia")
-  val irc_bot = system.actorOf(Props[MaiaIRCBot], "IRCBot")
+  val irc_bot = system.actorOf(Props[MaiaIRCActor], "IRCBot")
 
   irc_bot ! Start
 
