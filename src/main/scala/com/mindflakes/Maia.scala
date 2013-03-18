@@ -5,36 +5,21 @@ import akka.pattern.ask
 import scala.concurrent.duration._
 import akka.util.Timeout
 
-case object Tick
-case object Get
+case class Start()
 
-class Counter extends Actor with ActorLogging {
-  var count = 0
-
+class MaiaIRCBot extends Actor with ActorLogging {
   def receive = {
-    case Tick => {
-      log.info("tick")
-      count += 1
+    case Start => {
+      log.info("Starting")
     }
-    case Get  => sender ! count
   }
 }
 
+
 object Maia extends App {
   val system = ActorSystem("Maia")
-  implicit val ec = system.dispatcher
+  val irc_bot = system.actorOf(Props[MaiaIRCBot], "IRCBot")
 
-  val counter = system.actorOf(Props[Counter], "counter")
+  irc_bot ! Start
 
-  counter ! Tick
-  counter ! Tick
-  counter ! Tick
-
-  implicit val timeout = Timeout(5.seconds)
-
-  (counter ? Get) onSuccess {
-    case count => println("Count is " + count)
-  }
-
-  system.shutdown()
 }
