@@ -7,16 +7,25 @@ case class Message()
 
 object Maia extends App {
   val system = ActorSystem("Maia")
-  val irc_bot = new MaiaIRCBot(system)
+  val irc_bot = system.actorOf(Props[MaiaIRCActor],"irc")
 
   println("Press 'Return' key to exit.")
   readLine()
-  irc_bot.shutdown()
   system.shutdown()
 }
 
-class MaiaIRCBot(system: ActorSystem) extends PircBotX {
-  setName("MaiaIRCBot")
-  connect("irc.rizon.net")
-  joinChannel("#gardening")
+class MaiaIRCActor extends Actor {
+  val irc_bot = new PircBotX
+  irc_bot.setName("MaiaIRCActor")
+  irc_bot.connect("irc.rizon.net")
+  irc_bot.joinChannel("#gardening")
+  irc_bot.sendMessage("#gardening", "Itzza me, an actor")
+
+  override def postStop() {
+    irc_bot.shutdown()
+  }
+
+  def receive = {
+    case _ => {}
+  }
 }
