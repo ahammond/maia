@@ -22,7 +22,6 @@ class MaiaIRCActor extends Actor with ActorLogging {
   irc_bot.setName("MaiaIRCActor")
   irc_bot.connect("irc.rizon.net")
   irc_bot.joinChannel("#gardening")
-  irc_bot.sendMessage("#gardening", "Itzza me, an actor")
   irc_bot.getListenerManager.addListener(new LogAdapter)
 
   override def postStop() {
@@ -41,9 +40,9 @@ class MaiaIRCActor extends Actor with ActorLogging {
 }
 
 class MaiaIRCLogger extends Actor with ActorLogging {
-  context.system.eventStream.subscribe(self, classOf[MessageEvent[PircBotX]])
+  context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
   def receive = {
-    case e: MessageEvent[PircBotX] => {
+    case e: MessageEvent[_] => {
       log.info(e.getMessage)
     }
     case _ => {}
