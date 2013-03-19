@@ -6,11 +6,13 @@ import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events.MessageEvent
 
 case class Message()
+case class PlayPause()
 
 object Maia extends App {
   val system = ActorSystem("Maia")
   val irc_bot = system.actorOf(Props[MaiaIRCActor],"irc")
   val logger = system.actorOf(Props[MaiaIRCLogger],"logger")
+  val hermes = system.actorOf(Props[MaiaHermes],"hermes")
 
   println("Press 'Return' key to exit.")
   readLine()
@@ -43,8 +45,27 @@ class MaiaIRCLogger extends Actor with ActorLogging {
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
   def receive = {
     case e: MessageEvent[_] => {
-      log.info(e.getMessage)
+      val chan_name = e.getChannel.getName
+      val msg = e.getMessage
+      log.info(s"$chan_name $msg")
     }
     case _ => {}
   }
+}
+
+class MaiaHermes extends Actor with ActorLogging {
+  context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
+  def receive = {
+    case m: MessageEvent[_] if m.getMessage.equals("playpause") => {
+      log.info("playpause message recieved")
+      self ! PlayPause
+    }
+    case PlayPause => {
+      val runtime = Runtime.getRuntime
+      val args = Array("osascript", "-e", "tell application \"Hermes\" to playpause")
+      runtime.exec(args)
+    }
+    case _ => log.error("Unknown Message")
+  }
+
 }
