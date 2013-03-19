@@ -1,6 +1,6 @@
 # Maia
 
-A very simple and shitty IRC bot using Akka to control stuff like Hermes.
+This is a very simple and shitty IRC bot using Akka to control stuff like Hermes.
 
 ## Prelim commands
 
@@ -10,3 +10,4 @@ A very simple and shitty IRC bot using Akka to control stuff like Hermes.
 * `hate` down thumbs
 * `tired` says dont play this for amonth
 * `pauseplay` toggles pause and play
+* `help` get a link to here
