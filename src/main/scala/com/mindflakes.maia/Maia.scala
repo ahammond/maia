@@ -1,12 +1,14 @@
-package com.mindflakes
+package com.mindflakes.maia
 
 import akka.actor._
 import org.pircbotx.PircBotX
 import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events.MessageEvent
+import java.io.{BufferedReader, InputStreamReader, PrintStream}
 
 case class Message()
 case class PlayPause()
+case class NowPlaying()
 
 object Maia extends App {
   val system = ActorSystem("Maia")
@@ -55,17 +57,31 @@ class MaiaIRCLogger extends Actor with ActorLogging {
 
 class MaiaHermes extends Actor with ActorLogging {
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
+
+  def ascript(script: String): String = {
+    val runtime = Runtime.getRuntime
+    val args = Array("osascript", "-e", script)
+    val result = runtime.exec(args)
+    scala.io.Source.fromInputStream(result.getInputStream).getLines().mkString("")
+  }
+
+  def hermes(command: String): String = {
+    ascript("tell application \"Hermes\" to " + command)
+  }
+
   def receive = {
     case m: MessageEvent[_] if m.getMessage.equals("playpause") => {
       log.info("playpause message recieved")
       self ! PlayPause
     }
     case PlayPause => {
-      val runtime = Runtime.getRuntime
-      val args = Array("osascript", "-e", "tell application \"Hermes\" to playpause")
-      runtime.exec(args)
+      hermes("playpause")
+      log.info("NP: " + hermes("get {title, artist, album} of current song"))
     }
-    case _ => log.error("Unknown Message")
+    case NowPlaying => {
+      sender ! ""
+    }
+    case _ => {}
   }
 
 }

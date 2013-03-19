@@ -8,7 +8,7 @@ object MaiaBuild extends Build {
     base = file("."),
     settings = Project.defaultSettings ++ Seq(
       name := "Maia",
-      organization := "com.mindflakes",
+      organization := "com.mindflakes.maia",
       version := "0.1-SNAPSHOT",
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
