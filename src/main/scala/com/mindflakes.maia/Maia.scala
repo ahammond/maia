@@ -34,6 +34,7 @@ class MaiaIRCActor extends Actor with ActorLogging {
   val hermes = context.actorOf(Props[MaiaHermes],"hermes")
 
   override def postStop() {
+    irc_bot.setAutoReconnect(false)
     irc_bot.shutdown()
   }
 
