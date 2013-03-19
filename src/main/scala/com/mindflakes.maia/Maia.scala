@@ -5,6 +5,7 @@ import org.pircbotx.PircBotX
 import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events.MessageEvent
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
+import com.typesafe.config.ConfigFactory
 
 case class Message()
 case class PlayPause()
@@ -23,11 +24,12 @@ object Maia extends App {
 }
 
 class MaiaIRCActor extends Actor with ActorLogging {
+  val cfg = ConfigFactory.load()
   val irc_bot = new PircBotX
-  irc_bot.setName("MaiaIRCActor")
+  irc_bot.setName(cfg.getString("maia.nick"))
   irc_bot.setAutoNickChange(true)
-  irc_bot.connect("irc.rizon.net")
-  irc_bot.joinChannel("#gardening")
+  irc_bot.connect(cfg.getString("maia.host"))
+  irc_bot.joinChannel(cfg.getString("maia.channel"))
   irc_bot.setAutoReconnect(true)
   irc_bot.getListenerManager.addListener(new LogAdapter)
   val logger = context.actorOf(Props[MaiaIRCLogger],"logger")
