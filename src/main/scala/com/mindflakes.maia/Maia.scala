@@ -42,7 +42,7 @@ class MaiaIRCActor extends Actor with ActorLogging {
 
   def receive = {
     case Respond(msg) => {
-      irc_bot.sendMessage("#gardening", msg)
+      irc_bot.sendMessage(cfg.getString("maia.channel"), msg)
     }
     case _ => {}
   }
