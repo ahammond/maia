@@ -3,6 +3,8 @@ package com.mindflakes
 import akka.actor._
 import org.pircbotx.PircBotX
 
+case class Message()
+
 object Maia extends App {
   val system = ActorSystem("Maia")
   val irc_bot = new MaiaIRCBot(system)
@@ -17,5 +19,4 @@ class MaiaIRCBot(system: ActorSystem) extends PircBotX {
   setName("MaiaIRCBot")
   connect("irc.rizon.net")
   joinChannel("#gardening")
-  log("Joined")
 }
