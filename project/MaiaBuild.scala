@@ -1,12 +1,14 @@
 import sbt._
 import sbt.Keys._
+import sbtassembly.Plugin._
+import AssemblyKeys._
 
 object MaiaBuild extends Build {
 
   lazy val maia = Project(
     id = "maia",
     base = file("."),
-    settings = Project.defaultSettings ++ Seq(
+    settings = assemblySettings ++ Project.defaultSettings ++ Seq(
       name := "Maia",
       organization := "com.mindflakes.maia",
       version := "0.1-SNAPSHOT",

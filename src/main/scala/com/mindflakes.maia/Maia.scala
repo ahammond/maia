@@ -28,6 +28,7 @@ class MaiaIRCActor extends Actor with ActorLogging {
   irc_bot.connect("irc.rizon.net")
   irc_bot.joinChannel("#gardening")
   irc_bot.setAutoReconnect(true)
+  irc_bot.setAutoNickChange(true)
   irc_bot.getListenerManager.addListener(new LogAdapter)
   val logger = context.actorOf(Props[MaiaIRCLogger],"logger")
   val hermes = context.actorOf(Props[MaiaHermes],"hermes")
