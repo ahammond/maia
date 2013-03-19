@@ -95,9 +95,13 @@ class MaiaHermes extends Actor with ActorLogging {
       self ! Hate
     }
     case m: MessageEvent[_] if m.getMessage.equals("!!!np") => {
-      log.info("hate recieved")
+      log.info("np recieved")
       self ! NowPlaying
     }
+    case m: MessageEvent[_] if m.getMessage.equals("!!!help") => {
+      context.actorFor(self.path.parent) ! Respond("https://github.com/crazysim/maia")
+    }
+
     case PlayPause => {
       hermes("playpause")
       log.info("NP: " + hermes("get {title, artist, album} of current song"))
