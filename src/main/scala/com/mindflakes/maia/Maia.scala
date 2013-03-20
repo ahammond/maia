@@ -6,7 +6,6 @@ import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events._
 import com.typesafe.config.ConfigFactory
 
-
 case class PlayPause()
 case class NowPlaying()
 case class Tired()
@@ -59,10 +58,8 @@ class MaiaIRCActor extends Actor with ActorLogging {
 class MaiaIRCLogger extends Actor with ActorLogging {
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
   def receive = {
-    case e: MessageEvent[_] => {
-      val chan_name = e.getChannel.getName
-      val msg = e.getMessage
-      log.info(s"$chan_name $msg")
+    case MessageEvent(chan,user,msg) => {
+      log.info(s"|$chan| <$user> $msg")
     }
     case _ => {}
   }
@@ -143,7 +140,7 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
 
 object MessageEvent {
   def unapply(m: MessageEvent[_]): Option[(String, String, String)] = {
-    Some(m.getChannel.toString, m.getUser.toString, m.getMessage)
+    Some(m.getChannel.getName, m.getUser.getNick, m.getMessage)
   }
 }
 
