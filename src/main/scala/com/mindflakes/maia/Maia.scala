@@ -10,6 +10,7 @@ case class PlayPause()
 case class NowPlaying()
 case class Tired()
 case class Hate()
+case class Love()
 case class Respond(message: String)
 
 object Maia extends App {
@@ -73,7 +74,7 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
   def receive = {
     case MessageEvent(_,_,message) => {
       message.drop(trigger.length) match {
-        case "playpause" | "pauseplay" => {
+        case "playpause" | "pauseplay" | "pp" => {
           context.actorFor(hermes) ! PlayPause
         }
         case "tired" => {
@@ -81,6 +82,9 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
         }
         case "hate" => {
           context.actorFor(hermes) ! Hate
+        }
+        case "love" => {
+          context.actorFor(hermes) ! Love
         }
         case "np" => {
           context.actorFor(hermes) ! NowPlaying
@@ -128,8 +132,13 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
       hermes("tired of song")
     }
     case Hate => {
-      respond(s"$title by $artist song banned and sound-alikes discouraged.")
+      respond(s"$title by $artist banned and sound-alikes discouraged.")
       hermes("thumbs down")
+
+    }
+    case Love => {
+      respond(s"$title by $artist loved and sound-alikes encouraged.")
+      hermes("thumbs up")
 
     }
     case NowPlaying => {
