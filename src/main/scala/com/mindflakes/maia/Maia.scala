@@ -138,12 +138,12 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
       hermes("tired of song")
     }
     case Hate => {
-      respond(s"$title by $artist banned and sound-alikes discouraged.")
+      respond(s"$title by $artist banned and sound-alikes discouraged on $stationName.")
       hermes("thumbs down")
 
     }
     case Love => {
-      respond(s"$title by $artist loved and sound-alikes encouraged.")
+      respond(s"$title by $artist loved and sound-alikes encouraged om $stationName.")
       hermes("thumbs up")
 
     }
