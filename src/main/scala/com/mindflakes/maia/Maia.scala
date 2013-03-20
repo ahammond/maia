@@ -3,7 +3,7 @@ package com.mindflakes.maia
 import akka.actor._
 import org.pircbotx.PircBotX
 import org.pircbotx.hooks.ListenerAdapter
-import org.pircbotx.hooks.events.MessageEvent
+import org.pircbotx.hooks.events._
 import com.typesafe.config.ConfigFactory
 
 
@@ -66,15 +66,8 @@ class MaiaIRCLogger extends Actor with ActorLogging {
   }
 }
 
-class MaiaHermes extends Actor with ActorLogging {
+class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
-
-  def ascript(script: String): String = {
-    val runtime = Runtime.getRuntime
-    val args = Array("osascript", "-e", script)
-    val result = runtime.exec(args)
-    scala.io.Source.fromInputStream(result.getInputStream).getLines().mkString("")
-  }
 
   def hermes(command: String): String = {
     ascript("tell application \"Hermes\" to " + command)
@@ -119,11 +112,19 @@ class MaiaHermes extends Actor with ActorLogging {
     }
     case _ => {}
   }
-
 }
 
 object MessageEvent {
   def unapply(m: MessageEvent[_]): Option[(String, String, String)] = {
     Some(m.getChannel.toString, m.getUser.toString, m.getMessage)
+  }
+}
+
+trait ActorAppleScript {
+  def ascript(script: String): String = {
+    val runtime = Runtime.getRuntime
+    val args = Array("osascript", "-e", script)
+    val result = runtime.exec(args)
+    scala.io.Source.fromInputStream(result.getInputStream).getLines().mkString("")
   }
 }
