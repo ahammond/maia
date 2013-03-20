@@ -80,25 +80,26 @@ class MaiaHermes extends Actor with ActorLogging {
     ascript("tell application \"Hermes\" to " + command)
   }
 
+  val trigger = "!!!"
   def receive = {
-    case m: MessageEvent[_] if m.getMessage.equals("!!!playpause") => {
-      log.info("playpause message recieved")
-      self ! PlayPause
-    }
-    case m: MessageEvent[_] if m.getMessage.equals("!!!tired") => {
-      log.info("tired recieved")
-      self ! Tired
-    }
-    case m: MessageEvent[_] if m.getMessage.equals("!!!hate") => {
-      log.info("hate recieved")
-      self ! Hate
-    }
-    case m: MessageEvent[_] if m.getMessage.equals("!!!np") => {
-      log.info("np recieved")
-      self ! NowPlaying
-    }
-    case m: MessageEvent[_] if m.getMessage.equals("!!!help") => {
-      context.actorFor(self.path.parent) ! Respond("https://github.com/crazysim/maia")
+    case MessageEvent(_,_,message) => {
+      message.drop(trigger.length) match {
+        case "playpause" | "pauseplay" => {
+          self ! PlayPause
+        }
+        case "tired" => {
+          self ! Tired
+        }
+        case "hate" => {
+          self ! Hate
+        }
+        case "np" => {
+          self ! NowPlaying
+        }
+        case "help" => {
+          context.actorFor(self.path.parent) ! Respond("https://github.com/crazysim/maia")
+        }
+      }
     }
 
     case PlayPause => {
@@ -119,4 +120,10 @@ class MaiaHermes extends Actor with ActorLogging {
     case _ => {}
   }
 
+}
+
+object MessageEvent {
+  def unapply(m: MessageEvent[_]): Option[(String, String, String)] = {
+    Some(m.getChannel.toString, m.getUser.toString, m.getMessage)
+  }
 }
