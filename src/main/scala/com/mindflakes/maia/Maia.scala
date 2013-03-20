@@ -107,7 +107,6 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
 
   def np = hermes("get {title, artist, album} of current song")
 
-  val trigger = "!!!"
   def receive = {
     case PlayPause => {
       hermes("playpause")
