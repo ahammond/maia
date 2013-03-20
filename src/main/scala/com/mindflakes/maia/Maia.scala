@@ -33,7 +33,7 @@ class MaiaIRCActor extends Actor with ActorLogging {
   irc_bot.getListenerManager.addListener(new LogAdapter)
   val logger = context.actorOf(Props[MaiaIRCLogger],"logger")
   val hermes = context.actorOf(Props[MaiaHermes],"hermes")
-  val trigger = context.actorOf(Props[MaiaTriggerActor],"trigger")
+  val trigger = context.actorOf(Props(new MaiaTriggerActor(cfg.getString("maia.trigger"))),"trigger")
 
 
   override def postStop() {
@@ -68,8 +68,7 @@ class MaiaIRCLogger extends Actor with ActorLogging {
   }
 }
 
-class MaiaTriggerActor extends Actor with ActorLogging {
-  val trigger = "!!!"
+class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
   val hermes = "/user/irc/hermes"
 
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
