@@ -33,6 +33,8 @@ class MaiaIRCActor extends Actor with ActorLogging {
   irc_bot.getListenerManager.addListener(new LogAdapter)
   val logger = context.actorOf(Props[MaiaIRCLogger],"logger")
   val hermes = context.actorOf(Props[MaiaHermes],"hermes")
+  val trigger = context.actorOf(Props[MaiaTriggerActor],"trigger")
+
 
   override def postStop() {
     irc_bot.setAutoReconnect(false)
@@ -66,49 +68,59 @@ class MaiaIRCLogger extends Actor with ActorLogging {
   }
 }
 
-class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
+class MaiaTriggerActor extends Actor with ActorLogging {
+  val trigger = "!!!"
+  val hermes = "/user/irc/hermes"
+
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
 
-  def hermes(command: String): String = {
-    ascript("tell application \"Hermes\" to " + command)
-  }
-
-  val trigger = "!!!"
   def receive = {
     case MessageEvent(_,_,message) => {
       message.drop(trigger.length) match {
         case "playpause" | "pauseplay" => {
-          self ! PlayPause
+          context.actorFor(hermes) ! PlayPause
         }
         case "tired" => {
-          self ! Tired
+          context.actorFor(hermes) ! Tired
         }
         case "hate" => {
-          self ! Hate
+          context.actorFor(hermes) ! Hate
         }
         case "np" => {
-          self ! NowPlaying
+          context.actorFor(hermes) ! NowPlaying
         }
         case "help" => {
-          context.actorFor(self.path.parent) ! Respond("https://github.com/crazysim/maia")
+          context.actorFor("/user/irc") ! Respond("https://github.com/crazysim/maia")
         }
       }
     }
+  }
+}
 
+class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
+  context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
+
+  def hermes(command: String): String = {
+    log.info("Command: " + command)
+    val res = ascript("tell application \"Hermes\" to " + command)
+    res
+  }
+
+  def np = hermes("get {title, artist, album} of current song")
+
+  val trigger = "!!!"
+  def receive = {
     case PlayPause => {
       hermes("playpause")
-      log.info("NP: " + hermes("get {title, artist, album} of current song"))
     }
     case Tired => {
       hermes("tired of song")
-      log.info("NP: " + hermes("get {title, artist, album} of current song"))
     }
     case Hate => {
       hermes("thumbs down")
-      log.info("NP: " + hermes("get {title, artist, album} of current song"))
     }
     case NowPlaying => {
-      context.actorFor(self.path.parent) ! Respond(hermes("get {title, artist, album} of current song"))
+      context.actorFor("/user/irc") ! Respond(np)
     }
     case _ => {}
   }
