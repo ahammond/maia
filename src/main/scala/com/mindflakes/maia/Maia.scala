@@ -89,7 +89,7 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
           context.actorFor(hermes) ! NowPlaying
         }
         case "help" => {
-          context.actorFor("/user/irc") ! Respond("https://github.com/crazysim/maia")
+          context.actorFor("/user/irc") ! Respond("For help, please see the README.md @ https://github.com/crazysim/maia .")
         }
       }
     }
@@ -105,20 +105,35 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
     res
   }
 
-  def np = hermes("get {title, artist, album} of current song")
+  def title = hermes("get title of current song")
+  def artist = hermes("get artist of current song")
+  def album = hermes("get album of current song")
+  def titleURL = hermes("get titleURL of current song")
+  def playbackState = hermes("get playback state")
+
+  import org.pircbotx.Colors._
+  def np = s"$BOLD•Title: $NORMAL $title $BOLD •Artist: $NORMAL $artist $BOLD •Album: $NORMAL $album $BOLD"
+
+  def respond(msg: String) {
+    context.actorFor("/user/irc") ! Respond(msg)
+  }
 
   def receive = {
     case PlayPause => {
       hermes("playpause")
+      respond(s"Hermes is now $playbackState.")
     }
     case Tired => {
+      respond(s"$title by $artist banned for a month.")
       hermes("tired of song")
     }
     case Hate => {
+      respond(s"$title by $artist song banned and sound-alikes discouraged.")
       hermes("thumbs down")
+
     }
     case NowPlaying => {
-      context.actorFor("/user/irc") ! Respond(np)
+      respond("Now Playing: " + np)
     }
     case _ => {}
   }
