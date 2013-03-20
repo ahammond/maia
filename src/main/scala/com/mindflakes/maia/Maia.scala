@@ -73,26 +73,32 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
 
   def receive = {
     case MessageEvent(_,_,message) => {
-      message.drop(trigger.length) match {
-        case "playpause" | "pauseplay" | "pp" => {
-          context.actorFor(hermes) ! PlayPause
+      message.take(trigger.length) match {
+        case `trigger` => {
+          message.drop(trigger.length) match {
+            case "playpause" | "pauseplay" | "pp" => {
+              context.actorFor(hermes) ! PlayPause
+            }
+            case "tired" => {
+              context.actorFor(hermes) ! Tired
+            }
+            case "hate" => {
+              context.actorFor(hermes) ! Hate
+            }
+            case "love" => {
+              context.actorFor(hermes) ! Love
+            }
+            case "np" => {
+              context.actorFor(hermes) ! NowPlaying
+            }
+            case "help" => {
+              context.actorFor("/user/irc") ! Respond("For help, please see the README.md @ https://github.com/crazysim/maia .")
+            }
+            case _ => {
+              context.actorFor("/user/irc") ! Respond("Unknown Command")
+            }
+          }
         }
-        case "tired" => {
-          context.actorFor(hermes) ! Tired
-        }
-        case "hate" => {
-          context.actorFor(hermes) ! Hate
-        }
-        case "love" => {
-          context.actorFor(hermes) ! Love
-        }
-        case "np" => {
-          context.actorFor(hermes) ! NowPlaying
-        }
-        case "help" => {
-          context.actorFor("/user/irc") ! Respond("For help, please see the README.md @ https://github.com/crazysim/maia .")
-        }
-        case _ => {}
       }
     }
     case _ => {}
