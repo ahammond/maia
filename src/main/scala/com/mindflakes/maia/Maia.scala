@@ -7,7 +7,7 @@ import org.pircbotx.hooks.events.MessageEvent
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
 import com.typesafe.config.ConfigFactory
 
-case class Message()
+
 case class PlayPause()
 case class NowPlaying()
 case class Tired()
