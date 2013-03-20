@@ -99,6 +99,7 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
             }
           }
         }
+        case _ => {}
       }
     }
     case _ => {}
