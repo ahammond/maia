@@ -4,7 +4,6 @@ import akka.actor._
 import org.pircbotx.PircBotX
 import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events.MessageEvent
-import java.io.{BufferedReader, InputStreamReader, PrintStream}
 import com.typesafe.config.ConfigFactory
 
 
