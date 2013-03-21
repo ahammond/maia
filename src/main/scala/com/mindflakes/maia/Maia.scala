@@ -10,6 +10,7 @@ case class PlayPause()
 case class NowPlaying()
 case class Tired()
 case class Hate()
+case class Skip()
 case class Love()
 case class Respond(message: String)
 
@@ -146,7 +147,10 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
       respond(s"$title by $artist loved and sound-alikes encouraged om $stationName.")
       hermes("thumbs up")
     }
-
+    case Skip => {
+      respond(s"$title by $artist skipped")
+      hermes("next song")
+    }
     case NowPlaying => {
       respond(np)
     }
