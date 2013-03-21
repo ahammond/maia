@@ -149,7 +149,7 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
 
     }
     case NowPlaying => {
-      respond("Now Playing: " + np)
+      respond(np)
     }
     case _ => {}
   }
