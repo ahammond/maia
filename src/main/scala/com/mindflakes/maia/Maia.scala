@@ -92,6 +92,9 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
             case "np" => {
               context.actorFor(hermes) ! NowPlaying
             }
+            case "skip" => {
+              context.actorFor(hermes) ! Skip
+            }
             case "help" => {
               context.actorFor("/user/irc") ! Respond("For help, please see the README.md @ https://github.com/crazysim/maia .")
             }
