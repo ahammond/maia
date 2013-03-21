@@ -123,7 +123,7 @@ class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
   def stationName = hermes("get name of current station")
 
   import org.pircbotx.Colors._
-  def np = s"$BOLD•Title: $NORMAL $title $BOLD •Artist: $NORMAL $artist $BOLD •Album: $NORMAL $album $BOLD •Station: $NORMAL $stationName"
+  def np = s"$BOLD Title: $NORMAL $title $BOLD Artist: $NORMAL $artist $BOLD Album: $NORMAL $album $BOLD Station: $NORMAL $stationName"
 
   def respond(msg: String) {
     context.actorFor("/user/irc") ! Respond(msg)
