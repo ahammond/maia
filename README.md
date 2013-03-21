@@ -4,7 +4,7 @@ This is a very simple Scala IRC bot using PircbotX and Akka to control Hermes, a
 
 ## Commands
 
-`!!!` is the default prefix.
+`!!` is the default prefix.
 
 * `np` does now playing
 * `hate` thumbs down
