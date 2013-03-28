@@ -33,14 +33,13 @@ class MaiaIRCActor extends Actor with ActorLogging {
   irc_bot.setAutoReconnect(true)
   irc_bot.setAutoReconnectChannels(true)
   irc_bot.getListenerManager.addListener(new LogAdapter)
+
   val logger = context.actorOf(Props[MaiaIRCLogger],"logger")
   val hermes = context.actorOf(Props[MaiaHermes],"hermes")
   val trigger = context.actorOf(Props(new MaiaTriggerActor(cfg.getString("maia.trigger"))),"trigger")
 
-
   override def postStop() {
-    irc_bot.setAutoReconnect(false)
-    irc_bot.shutdown()
+    irc_bot.shutdown(true)
   }
 
   def receive = {
