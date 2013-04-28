@@ -17,7 +17,7 @@ object MaiaBuild extends Build {
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
       libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor" % "2.1.2",
-        "org.pircbotx" % "pircbotx" % "1.8",
+        "org.pircbotx" % "pircbotx" % "1.9",
         "com.typesafe" % "config" % "1.0.0"
       )
     )
