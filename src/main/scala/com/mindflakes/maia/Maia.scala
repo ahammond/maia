@@ -16,14 +16,14 @@ case class Respond(message: String)
 
 object Maia extends App {
   val system = ActorSystem("Maia")
-  val irc_bot = system.actorOf(Props[MaiaIRCActor],"irc")
+  val irc_bot = system.actorOf(Props[IRCBot],"irc")
 
   println("Press 'Return' key to exit.")
   readLine()
   system.shutdown()
 }
 
-class MaiaIRCActor extends Actor with ActorLogging {
+class IRCBot extends Actor with ActorLogging {
   val cfg = ConfigFactory.load()
   val irc_bot = new PircBotX
   irc_bot.setName(cfg.getString("maia.nick"))
@@ -34,8 +34,8 @@ class MaiaIRCActor extends Actor with ActorLogging {
   irc_bot.setAutoReconnectChannels(true)
   irc_bot.getListenerManager.addListener(new LogAdapter)
 
-  val logger = context.actorOf(Props[MaiaIRCLogger],"logger")
-  val hermes = context.actorOf(Props[MaiaHermes],"hermes")
+  val logger = context.actorOf(Props[IRCLogger],"logger")
+  val hermes = context.actorOf(Props[Hermes],"hermes")
   val trigger = context.actorOf(Props(new MaiaTriggerActor(cfg.getString("maia.trigger"))),"trigger")
 
   override def postStop() {
@@ -57,7 +57,7 @@ class MaiaIRCActor extends Actor with ActorLogging {
 
 }
 
-class MaiaIRCLogger extends Actor with ActorLogging {
+class IRCLogger extends Actor with ActorLogging {
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
   def receive = {
     case MessageEvent(chan,user,msg) => {
@@ -110,7 +110,7 @@ class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
   }
 }
 
-class MaiaHermes extends Actor with ActorLogging with ActorAppleScript {
+class Hermes extends Actor with ActorLogging with ActorAppleScript {
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
 
   def hermes(command: String): String = {
