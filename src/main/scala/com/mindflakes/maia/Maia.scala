@@ -26,6 +26,7 @@ object Maia extends App {
 class IRCBot extends Actor with ActorLogging {
   val cfg = ConfigFactory.load()
   val irc_bot = new PircBotX
+  irc_bot.setVerbose(true)
   irc_bot.setName(cfg.getString("maia.nick"))
   irc_bot.setAutoNickChange(true)
   irc_bot.connect(cfg.getString("maia.host"))
@@ -33,6 +34,9 @@ class IRCBot extends Actor with ActorLogging {
   irc_bot.setAutoReconnect(true)
   irc_bot.setAutoReconnectChannels(true)
   irc_bot.getListenerManager.addListener(new LogAdapter)
+  if (cfg.hasPath("maia.auth")) {
+    irc_bot.identify(cfg.getString("maia.auth"))
+  }
 
   val logger = context.actorOf(Props[IRCLogger],"logger")
   val hermes = context.actorOf(Props[Hermes],"hermes")
