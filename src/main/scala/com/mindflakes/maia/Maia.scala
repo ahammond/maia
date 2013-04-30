@@ -5,6 +5,7 @@ import org.pircbotx.PircBotX
 import org.pircbotx.hooks.ListenerAdapter
 import org.pircbotx.hooks.events._
 import com.typesafe.config.ConfigFactory
+import scala.concurrent.ExecutionContext
 
 case class PlayPause()
 case class NowPlaying()
@@ -23,7 +24,15 @@ object Maia extends App {
   system.shutdown()
 }
 
+object IRCBot {
+  case class JoinChannel()
+}
+
 class IRCBot extends Actor with ActorLogging {
+  import IRCBot._
+  import scala.concurrent.duration._
+  import ExecutionContext.Implicits.global
+
   val cfg = ConfigFactory.load()
   val irc_bot = new PircBotX
   irc_bot.setVerbose(true)
@@ -33,11 +42,13 @@ class IRCBot extends Actor with ActorLogging {
   irc_bot.setName(cfg.getString("maia.nick"))
   irc_bot.setAutoNickChange(true)
   irc_bot.connect(cfg.getString("maia.host"))
-  irc_bot.setAutoReconnect(true)
-  irc_bot.setAutoReconnectChannels(true)
-  irc_bot.joinChannel(cfg.getString("maia.channel"))
+
   irc_bot.getListenerManager.addListener(new LogAdapter)
 
+  context.system.scheduler.scheduleOnce(1.seconds) {
+    log.info("Scheduling")
+    self ! JoinChannel
+  }
 
   val logger = context.actorOf(Props[IRCLogger],"logger")
   val hermes = context.actorOf(Props[Hermes],"hermes")
@@ -56,6 +67,12 @@ class IRCBot extends Actor with ActorLogging {
   def receive = {
     case Respond(msg) => {
       irc_bot.sendMessage(cfg.getString("maia.channel"), msg)
+    }
+    case JoinChannel() => {
+      log.info("joining channel")
+      irc_bot.joinChannel(cfg.getString("maia.channel"))
+      irc_bot.setAutoReconnect(true)
+      irc_bot.setAutoReconnectChannels(true)
     }
     case _ => {}
   }
