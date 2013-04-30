@@ -36,7 +36,13 @@ class IRCBot extends Actor with ActorLogging {
 
   val logger = context.actorOf(Props[IRCLogger],"logger")
   val hermes = context.actorOf(Props[Hermes],"hermes")
-  val trigger = context.actorOf(Props(new MaiaTriggerActor(cfg.getString("maia.trigger"))),"trigger")
+  val trigger = context.actorOf(Props(new TriggerHandler(cfg.getString("maia.trigger"))),"trigger")
+
+  class LogAdapter extends ListenerAdapter {
+    override def onMessage(event: MessageEvent[Nothing]) {
+      context.system.eventStream.publish(event)
+    }
+  }
 
   override def postStop() {
     irc_bot.shutdown(true)
@@ -48,13 +54,6 @@ class IRCBot extends Actor with ActorLogging {
     }
     case _ => {}
   }
-
-  class LogAdapter extends ListenerAdapter {
-    override def onMessage(event: MessageEvent[Nothing]) {
-      context.system.eventStream.publish(event)
-    }
-  }
-
 }
 
 class IRCLogger extends Actor with ActorLogging {
@@ -67,7 +66,7 @@ class IRCLogger extends Actor with ActorLogging {
   }
 }
 
-class MaiaTriggerActor(trigger: String) extends Actor with ActorLogging {
+class TriggerHandler(trigger: String) extends Actor with ActorLogging {
   val hermes = "/user/irc/hermes"
 
   context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
