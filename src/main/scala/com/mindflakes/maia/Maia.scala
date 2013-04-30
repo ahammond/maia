@@ -35,7 +35,6 @@ class IRCBot extends Actor with ActorLogging {
   irc_bot.connect(cfg.getString("maia.host"))
   irc_bot.setAutoReconnect(true)
   irc_bot.setAutoReconnectChannels(true)
-
   irc_bot.joinChannel(cfg.getString("maia.channel"))
   irc_bot.getListenerManager.addListener(new LogAdapter)
 
