@@ -25,7 +25,7 @@ object Maia extends App {
 }
 
 object IRCBot {
-  case class JoinChannel()
+  case class JoinChannel(channel: String)
 }
 
 class IRCBot extends Actor with ActorLogging {
@@ -41,13 +41,16 @@ class IRCBot extends Actor with ActorLogging {
   }
   irc_bot.setName(cfg.getString("maia.nick"))
   irc_bot.setAutoNickChange(true)
-  irc_bot.connect(cfg.getString("maia.host"))
+  irc_bot.setAutoReconnect(true)
+  irc_bot.setAutoReconnectChannels(true)
 
+  irc_bot.connect(cfg.getString("maia.host"))
   irc_bot.getListenerManager.addListener(new LogAdapter)
 
-  context.system.scheduler.scheduleOnce(1.seconds) {
-    log.info("Scheduling")
-    self ! JoinChannel
+//  Workaround for late identify response.
+  val s = self
+  context.system.scheduler.scheduleOnce(3.seconds) {
+    s ! JoinChannel(cfg.getString("maia.channel"))
   }
 
   val logger = context.actorOf(Props[IRCLogger],"logger")
@@ -68,13 +71,10 @@ class IRCBot extends Actor with ActorLogging {
     case Respond(msg) => {
       irc_bot.sendMessage(cfg.getString("maia.channel"), msg)
     }
-    case JoinChannel() => {
-      log.info("joining channel")
-      irc_bot.joinChannel(cfg.getString("maia.channel"))
-      irc_bot.setAutoReconnect(true)
-      irc_bot.setAutoReconnectChannels(true)
+    case JoinChannel(msg) => {
+      log.info(s"Joining $msg")
+      irc_bot.joinChannel(msg)
     }
-    case _ => {}
   }
 }
 
