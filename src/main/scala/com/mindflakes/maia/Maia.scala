@@ -47,7 +47,7 @@ class IRCBot extends Actor with ActorLogging {
   irc_bot.connect(cfg.getString("maia.host"))
   irc_bot.getListenerManager.addListener(new LogAdapter)
 
-//  Workaround for late identify response.
+  //  Workaround for late identify response.
   val s = self
   context.system.scheduler.scheduleOnce(3.seconds) {
     s ! JoinChannel(cfg.getString("maia.channel"))
