@@ -108,7 +108,7 @@ class TriggerHandler(trigger: String) extends Actor with ActorLogging {
             case "hate" => {
               context.actorFor(hermes) ! Hate
             }
-            case "love" => {
+            case "love" | "like" => {
               context.actorFor(hermes) ! Love
             }
             case "np" => {
