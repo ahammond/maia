@@ -8,7 +8,7 @@ This is a very simple Scala IRC bot using PircbotX and Akka to control Hermes, a
 
 * `np` does now playing
 * `hate` thumbs down
-* `love` thumbs up
+* `love|like` thumbs up
 * `skip` skips to next song
 * `tired` dont play this for amonth
 * `playpause|pauseplay|pp` toggles pause and play
