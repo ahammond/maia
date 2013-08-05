@@ -10,15 +10,16 @@ object MaiaBuild extends Build {
     base = file("."),
     settings = assemblySettings ++ Project.defaultSettings ++ Seq(
       name := "Maia",
-      organization := "com.mindflakes.maia",
-      version := "0.8-SNAPSHOT",
+      organization := "com.mindflakes.maia.hipchat",
+      version := "0.9-SNAPSHOT",
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
-      libraryDependencies ++= Seq(
+        libraryDependencies ++= Seq(
         "com.typesafe.akka" %% "akka-actor" % "2.1.2",
-        "org.pircbotx" % "pircbotx" % "1.9",
-        "com.typesafe" % "config" % "1.0.0"
+        "com.typesafe" % "config" % "1.0.0",
+        "org.igniterealtime.smack" % "smackx" % "3.2.1",
+        "org.igniterealtime.smack" % "smack" % "3.2.1"
       )
     )
   )

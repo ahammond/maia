@@ -1,11 +1,11 @@
 package com.mindflakes.maia
 
 import akka.actor._
-import org.pircbotx.PircBotX
-import org.pircbotx.hooks.ListenerAdapter
-import org.pircbotx.hooks.events._
 import com.typesafe.config.ConfigFactory
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
+import org.jivesoftware.smack.{PacketListener, ConnectionConfiguration, XMPPConnection}
+import org.jivesoftware.smackx.muc.MultiUserChat
+import org.jivesoftware.smack.packet.Packet
 
 case class PlayPause()
 case class NowPlaying()
@@ -14,6 +14,8 @@ case class Hate()
 case class Skip()
 case class Love()
 case class Respond(message: String)
+
+case class RoomMessage(str: String)
 
 object Maia extends App {
   val system = ActorSystem("Maia")
@@ -34,56 +36,48 @@ class IRCBot extends Actor with ActorLogging {
   import ExecutionContext.Implicits.global
 
   val cfg = ConfigFactory.load()
-  val irc_bot = new PircBotX
-  irc_bot.setVerbose(true)
-  irc_bot.setName(cfg.getString("maia.nick"))
-  irc_bot.setAutoNickChange(true)
-  irc_bot.setAutoReconnect(true)
-  irc_bot.setAutoReconnectChannels(true)
 
-  irc_bot.getListenerManager.addListener(new LogAdapter)
-
-  irc_bot.connect(cfg.getString("maia.host"))
-  if (cfg.hasPath("maia.auth")) {
-    irc_bot.identify(cfg.getString("maia.auth"))
-  }
-
-  //  Workaround for late identify response.
-  val s = self
-  context.system.scheduler.scheduleOnce(10.seconds) {
-    s ! JoinChannel(cfg.getString("maia.channel"))
-  }
+  val bot = self
 
   val logger = context.actorOf(Props[IRCLogger],"logger")
   val hermes = context.actorOf(Props[Hermes],"hermes")
   val trigger = context.actorOf(Props(new TriggerHandler(cfg.getString("maia.trigger"))),"trigger")
 
-  class LogAdapter extends ListenerAdapter {
-    override def onMessage(event: MessageEvent[Nothing]) {
-      context.system.eventStream.publish(event)
-    }
-  }
+  val roomId = cfg.getString("maia.room")
 
-  override def postStop() {
-    irc_bot.shutdown(true)
-  }
+  val config = new ConnectionConfiguration("chat.hipchat.com", 5222)
+  val connection = new XMPPConnection(config)
+  connection.connect()
+  connection.login(cfg.getString("maia.user"), cfg.getString("maia.password"), "bot")
+  val chat = new MultiUserChat(connection, cfg.getString("maia.room"))
+  chat.join(cfg.getString("maia.realname"))
+
+  chat.addMessageListener(new PacketListener {
+    def processPacket(packet: Packet) {
+      import org.jivesoftware.smack.packet.Message
+      packet match {
+        case m: Message => {
+          context.system.eventStream.publish(RoomMessage(m.getBody))
+        }
+      }
+    }
+  })
 
   def receive = {
     case Respond(msg) => {
-      irc_bot.sendMessage(cfg.getString("maia.channel"), msg)
+
     }
     case JoinChannel(msg) => {
-      log.info(s"Joining $msg")
-      irc_bot.joinChannel(msg)
+
     }
   }
 }
 
 class IRCLogger extends Actor with ActorLogging {
-  context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
+  context.system.eventStream.subscribe(self, classOf[RoomMessage])
   def receive = {
-    case MessageEvent(chan,user,msg) => {
-      log.info(s"|$chan| <$user> $msg")
+    case RoomMessage(msg) => {
+      log.info(s"$msg")
     }
     case _ => {}
   }
@@ -92,10 +86,10 @@ class IRCLogger extends Actor with ActorLogging {
 class TriggerHandler(trigger: String) extends Actor with ActorLogging {
   val hermes = "/user/irc/hermes"
 
-  context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
+  context.system.eventStream.subscribe(self, classOf[RoomMessage])
 
   def receive = {
-    case MessageEvent(_,_,message) => {
+    case RoomMessage(message) => {
       message.take(trigger.length) match {
         case `trigger` => {
           message.drop(trigger.length) match {
@@ -133,7 +127,6 @@ class TriggerHandler(trigger: String) extends Actor with ActorLogging {
 }
 
 class Hermes extends Actor with ActorLogging with ActorAppleScript {
-  context.system.eventStream.subscribe(self, classOf[MessageEvent[_]])
 
   def hermes(command: String): String = {
     log.info("Command: " + command)
@@ -141,14 +134,12 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
     res
   }
 
-  import org.pircbotx.Colors._
-
-  def title = BOLD + hermes("get title of current song") + NORMAL
-  def artist = BOLD + hermes("get artist of current song") + NORMAL
-  def album = BOLD + hermes("get album of current song") + NORMAL
+  def title = hermes("get title of current song")
+  def artist = hermes("get artist of current song")
+  def album = hermes("get album of current song")
   def titleURL = hermes("get titleURL of current song")
   def playbackState = hermes("get playback state")
-  def stationName = BOLD + hermes("get name of current station") + NORMAL
+  def stationName = hermes("get name of current station")
 
   def np = s"$title by $artist from $album on $stationName "
 
@@ -181,12 +172,6 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
       respond(np)
     }
     case _ => {}
-  }
-}
-
-object MessageEvent {
-  def unapply(m: MessageEvent[_]): Option[(String, String, String)] = {
-    Some(m.getChannel.getName, m.getUser.getNick, m.getMessage)
   }
 }
 
