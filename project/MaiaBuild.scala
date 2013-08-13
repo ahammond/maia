@@ -11,7 +11,7 @@ object MaiaBuild extends Build {
     settings = assemblySettings ++ Project.defaultSettings ++ Seq(
       name := "Maia",
       organization := "com.mindflakes.maia.hipchat",
-      version := "0.9-SNAPSHOT",
+      version := "1.0.0-SNAPSHOT",
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
@@ -19,7 +19,9 @@ object MaiaBuild extends Build {
         "com.typesafe.akka" %% "akka-actor" % "2.1.2",
         "com.typesafe" % "config" % "1.0.0",
         "org.igniterealtime.smack" % "smackx" % "3.2.1",
-        "org.igniterealtime.smack" % "smack" % "3.2.1"
+        "org.igniterealtime.smack" % "smack" % "3.2.1",
+        "com.ning" % "async-http-client" % "1.7.19",
+        "ch.qos.logback" % "logback-classic" % "1.0.3"
       )
     )
   )

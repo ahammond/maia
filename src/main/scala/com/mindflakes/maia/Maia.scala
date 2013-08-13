@@ -6,6 +6,8 @@ import scala.concurrent.{Future, ExecutionContext}
 import org.jivesoftware.smack.{PacketListener, ConnectionConfiguration, XMPPConnection}
 import org.jivesoftware.smackx.muc.MultiUserChat
 import org.jivesoftware.smack.packet.Packet
+import scala.io.Source
+import com.ning.http.client.{RequestBuilder, AsyncHttpClient}
 
 case class PlayPause()
 case class NowPlaying()
@@ -59,13 +61,25 @@ class IRCBot extends Actor with ActorLogging {
         case m: Message => {
           context.system.eventStream.publish(RoomMessage(m.getBody))
         }
+        case _ => {
+
+        }
       }
     }
   })
 
   def receive = {
     case Respond(msg) => {
+      val builder = new RequestBuilder("POST")
 
+      val request = builder.setUrl("http://api.hipchat.com/v1/rooms/message")
+        .addParameter("auth_token", cfg.getString("maia.key"))
+        .addParameter("room_id", cfg.getString("maia.roomId"))
+        .addParameter("from", cfg.getString("maia.from"))
+        .addParameter("message", msg)
+        .build()
+      val client = new AsyncHttpClient()
+      client.executeRequest(request)
     }
     case JoinChannel(msg) => {
 
@@ -131,17 +145,30 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
   def hermes(command: String): String = {
     log.info("Command: " + command)
     val res = ascript("tell application \"Hermes\" to " + command)
-    res
+    xml.Utility.escape(res)
   }
 
-  def title = hermes("get title of current song")
+  def bold(s: String) = {
+    "<b>" + s + "</b>"
+  }
+
+  def title = bold(hermes("get title of current song"))
   def artist = hermes("get artist of current song")
   def album = hermes("get album of current song")
   def titleURL = hermes("get titleURL of current song")
-  def playbackState = hermes("get playback state")
-  def stationName = hermes("get name of current station")
+  def artURL = hermes("get art of current song")
+  def playbackState = bold(hermes("get playback state"))
+  def stationName = bold(hermes("get name of current station"))
 
-  def np = s"$title by $artist from $album on $stationName "
+  def help = "!!like, !!skip, or !!hate"
+
+  def np = s"<table>" +
+    s"<tr>" +
+    s"<td><img src=$artURL height='128px' width='128px'><td>" +
+    s"<td>Now playing on $stationName:<br/><br/> $title <br/>by $artist <br/>from $album <br/><br/>" +
+    s"<em>!!like, !!skip, or !!hate</em></td>" +
+    s"<tr>" +
+    s"</table>"
 
   def respond(msg: String) {
     context.actorFor("/user/irc") ! Respond(msg)
