@@ -11,7 +11,7 @@ object MaiaBuild extends Build {
     settings = assemblySettings ++ Project.defaultSettings ++ Seq(
       name := "Maia",
       organization := "com.mindflakes.maia.hipchat",
-      version := "1.0.0-SNAPSHOT",
+      version := "1.0.1-SNAPSHOT",
       scalaVersion := "2.10.0",
       scalacOptions ++= Seq("-feature", "-deprecation"),
       resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases",
