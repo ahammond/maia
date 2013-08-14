@@ -67,18 +67,17 @@ class IRCBot extends Actor with ActorLogging {
       }
     }
   })
+  val client = new AsyncHttpClient()
 
   def receive = {
     case Respond(msg) => {
       val builder = new RequestBuilder("POST")
-
       val request = builder.setUrl("http://api.hipchat.com/v1/rooms/message")
         .addParameter("auth_token", cfg.getString("maia.key"))
         .addParameter("room_id", cfg.getString("maia.roomId"))
         .addParameter("from", cfg.getString("maia.from"))
         .addParameter("message", msg)
         .build()
-      val client = new AsyncHttpClient()
       client.executeRequest(request)
     }
     case JoinChannel(msg) => {
