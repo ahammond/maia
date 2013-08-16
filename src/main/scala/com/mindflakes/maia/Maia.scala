@@ -163,7 +163,7 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
 
   def np = s"<table>" +
     s"<tr>" +
-    s"<td><img src=$artURL height='128px' width='128px'><td>" +
+    s"<td><img src=$artURL height='128px'><td>" +
     s"<td>Now $playbackState on $stationName:<br/><br/> $title <br/>by <i>$artist</i> <br/>from <i>$album</i> <br/><br/>" +
     s"<em>!!like, !!skip, or !!hate</em></td>" +
     s"<tr>" +
