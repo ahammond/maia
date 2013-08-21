@@ -162,7 +162,7 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
   def hermesStrict(command: String): String = {
     log.info("Command: " + command)
     val res = ascript_strict("tell application \"Hermes\" to " + command)
-    xml.Utility.escape(res)
+    res
   }
 
   def bold(s: String) = {
@@ -261,7 +261,7 @@ trait ActorAppleScript {
 
   def ascript_strict(script: String): String = {
     val runtime = Runtime.getRuntime
-    val args = Array("osascript", "-s s", "-e", script)
+    val args = Array("osascript", "-s", "s", "-e", script)
     val result = runtime.exec(args)
     scala.io.Source.fromInputStream(result.getInputStream).getLines().mkString("")
   }
