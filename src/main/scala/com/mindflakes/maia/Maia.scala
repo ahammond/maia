@@ -8,6 +8,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat
 import org.jivesoftware.smack.packet.Packet
 import scala.io.Source
 import com.ning.http.client.{RequestBuilder, AsyncHttpClient}
+import scala.util.parsing.json.JSON
 
 case class PlayPause()
 case class NowPlaying()
@@ -15,9 +16,16 @@ case class Tired()
 case class Hate()
 case class Skip()
 case class Love()
+
+case class StationSearch(query: String)
+
+case class StationSelect(query: String)
+
 case class Respond(message: String)
 
 case class RoomMessage(str: String)
+
+case class Station(name: String, id: String)
 
 object Maia extends App {
   val system = ActorSystem("Maia")
@@ -127,6 +135,10 @@ class TriggerHandler(trigger: String) extends Actor with ActorLogging {
             case "help" => {
               context.actorFor("/user/irc") ! Respond("For help, please see the README.md @ https://github.com/crazysim/maia .")
             }
+            case s if s.startsWith("search ") => {
+              val query = message.drop(trigger.length + "search ".length)
+              context.actorFor(hermes) ! StationSearch(query)
+            }
             case _ => {
               context.actorFor("/user/irc") ! Respond("Unknown Command")
             }
@@ -144,6 +156,12 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
   def hermes(command: String): String = {
     log.info("Command: " + command)
     val res = ascript("tell application \"Hermes\" to " + command)
+    xml.Utility.escape(res)
+  }
+
+  def hermesStrict(command: String): String = {
+    log.info("Command: " + command)
+    val res = ascript_strict("tell application \"Hermes\" to " + command)
     xml.Utility.escape(res)
   }
 
@@ -172,6 +190,32 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
     context.actorFor("/user/irc") ! Respond(msg)
   }
 
+  def search(msg: String): Option[List[Station]] = {
+
+    // Hacky JSON conversion
+    val station_names_as = hermesStrict("name of stations")
+    val station_ids_as = hermesStrict("stationId of stations")
+    val station_names_json = "[" + station_names_as.drop(1).dropRight(1) + "]"
+    val station_ids_json = "[" + station_ids_as.drop(1).dropRight(1) + "]"
+
+    val station_names = JSON.parseFull(station_names_json)
+    val station_ids = JSON.parseFull(station_ids_json)
+
+    (station_names, station_ids) match {
+      case (a: Some[Any], b: Some[Any]) => {
+        val names = a.get.asInstanceOf[List[String]]
+        val ids = b.get.asInstanceOf[List[String]]
+        val stations = (names, ids).zipped.map( (name, id) =>
+          Station(name ,id)
+        )
+        Some(stations)
+      }
+      case _ => {
+        None
+      }
+    }
+  }
+
   def receive = {
     case PlayPause => {
       hermes("playpause")
@@ -196,6 +240,13 @@ class Hermes extends Actor with ActorLogging with ActorAppleScript {
     case NowPlaying => {
       respond(np)
     }
+    case StationSearch(query) => {
+      val result = search(query)
+      respond(result.toString)
+    }
+    case StationSelect(query) => {
+
+    }
     case _ => {}
   }
 }
@@ -204,6 +255,13 @@ trait ActorAppleScript {
   def ascript(script: String): String = {
     val runtime = Runtime.getRuntime
     val args = Array("osascript", "-e", script)
+    val result = runtime.exec(args)
+    scala.io.Source.fromInputStream(result.getInputStream).getLines().mkString("")
+  }
+
+  def ascript_strict(script: String): String = {
+    val runtime = Runtime.getRuntime
+    val args = Array("osascript", "-s s", "-e", script)
     val result = runtime.exec(args)
     scala.io.Source.fromInputStream(result.getInputStream).getLines().mkString("")
   }
