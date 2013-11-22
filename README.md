@@ -18,6 +18,6 @@ This is a very simple Scala IRC bot using PircbotX and Akka to control Hermes, a
 
 1. Install `sbt` through something like Homebrew, conscript, or whatever.
 
-2. Run `sbt assembly` and look in the `target/` folder.
+2. Run `sbt assembly`
 
-3. There is no step 3.
+3. look in the `target/` folder.
